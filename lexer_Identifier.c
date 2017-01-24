@@ -4,6 +4,16 @@ FILE *fp;
 FILE *temp;
 char buffer[100];
 char in;
+char delimiter[]={'[','{','(',')',']','}',',',':',';'};
+int size_del = sizeof(delimiter)/sizeof(delimiter[0]);
+
+int checkdel(int x){
+    int i;
+    for(i=0;i<size_del;i++){
+        if(x==delimiter[i]) return 1;
+    }
+    return -1;
+}
 
 int alpha(int x){
     return (x>='a'&&x<='z')||(x>='A'&&x<='Z');
@@ -28,6 +38,9 @@ char * lexer(FILE* fp){
                 break;
             }
         }
+    }
+    else if(checkdel(in)){
+        buffer[c++]=in;
     }
     buffer[c]=0;
     return buffer;
