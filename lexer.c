@@ -3,6 +3,8 @@
 
 void parser(char *);
 char* lexer(FILE *);
+char* ret_token(int);
+char buffer[100];
 int state=0;
 int main()
 {
@@ -10,7 +12,15 @@ int main()
     parser(file);
     return 0;
 }
-
+char* ret_token(int state_val)
+{
+    if(state_val==12)
+        return "TK_FLOAT";
+    else if(state==10)
+        return "TK_INTEGER";
+    else
+        return "ERROR!";
+}
 void parser(char * file)
 {
     FILE *fp=fopen("test.txt","r");
@@ -24,12 +34,7 @@ void parser(char * file)
         printf("IN PARSE LOOP\n");
         char* string=lexer(fp);
         //printf("%s",string);
-        if(state==12)
-            printf("string %s identified as float.\n",string);
-        else if(state==10)
-            printf("string %s identified as integer.\n",string);
-        else
-            printf("Nada.\n");
+        printf("string %s is identified as %s\n",buffer,string);
     }
     close(fp);
 }
@@ -37,7 +42,7 @@ void parser(char * file)
 char* lexer(FILE* fp)
 {
     char ch;
-    char buffer[100];
+
     int buf_index=0;
     state=0;
     while((ch=fgetc(fp))!=EOF)
@@ -52,6 +57,8 @@ char* lexer(FILE* fp)
                     state=10;
                 else if(ch==' ')
                     buf_index--;
+                else
+                    state=999;
             break;
             case 10:
                  printf("In state 10\n");
@@ -62,7 +69,7 @@ char* lexer(FILE* fp)
                    buffer[buf_index-1]=0;
                    fseek(fp,-1,SEEK_CUR);
                    //printf("buffer is %s",buffer);
-                   return buffer;
+                   return ret_token(state);
                 }
             break;
             case 11:
@@ -80,7 +87,7 @@ char* lexer(FILE* fp)
                    buffer[buf_index-1]=0;
                    fseek(fp,-1,SEEK_CUR);
                    //printf("buffer is %s",buffer);
-                   return buffer;
+                   return ret_token(state);
                }
 
             break;
@@ -97,6 +104,10 @@ char* lexer(FILE* fp)
 
     }
     if(ch==EOF)
-        state=1000;
+        {
+            char* string=ret_token(state);
+            state=1000;
+            return string;
+        }
 
 }
