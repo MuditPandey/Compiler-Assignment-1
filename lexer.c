@@ -33,15 +33,25 @@
 30.            ^=              30
 31.            identifier      31
 32.            integer         32
-33.            float           34
-
+33.            .               33    [not a final state]
+34.            float           34
+35.            "               35    [not a final state]
+36.            string literal  36    [not a final state]
+37.            "(ending)       37
+38.            ;               38
+39.            {               39
+40.            }               40
+41.            (               41
+42.            )               42
+43.            :               43
+44.            ,               44
 
 ******************************************************************************************************************************/
 #include<stdio.h>
 #include<stdbool.h>
 #include<string.h>
 #include<ctype.h>
-#define NO_KEYWORDS 39
+#define NO_KEYWORDS 7 //39
 
 void parser(char *);
 char* lexer(FILE *);
@@ -51,10 +61,11 @@ char buffer[100];
 int line=1;
 int state=0;
 //ADD MORE KEYWORDS
-char *keyword[]={"abstract","case","catch","class","def","do","else","extends","false","final","finally","for","forSome",
+/*char *keyword[]={"abstract","case","catch","class","def","do","else","extends","false","final","finally","for","forSome",
 				"if","implicit","import","lazy","match","new","Null","object","override","package","private","protected",
 				"return","scaled","super","this","throw","trait","Try","true","type","val","Var","while","with","yield",
-				/*":","=>","<-","<:","<%",">:","#","@"*/};
+				/*":","=>","<-","<:","<%",">:","#","@"*///};
+char *keyword[]={"int","else","if","return","void","while","main"};
 int main(int argc,char* argv[])
 {
     char file[]="test.txt";
@@ -92,8 +103,12 @@ char* ret_token(int state_val)
         return "TK_INTEGER";
     else if(state_val==34)
         return "TK_FLOAT";
+    else if(state_val==37)
+        return "TK_STRING";
+    else if(state_val>=38 && state_val<=44)
+        return "TK_DELIMITER";
     else
-        return "ERROR!";
+        return "BAD CHARACTER or INCORRECT USAGE";
 }
 void parser(char * file)
 {
@@ -157,8 +172,24 @@ char* lexer(FILE* fp)
                     state=32;
                 else if(isalpha(ch) || ch=='_')
                     state=31;
+                else if(ch=='"')
+                    state=35;
                 else if(ch==' ')
                     buf_index--;
+                else if(ch==';')
+                    state=38;
+                else if(ch=='{')
+                    state=39;
+                else if(ch=='}')
+                    state=40;
+                else if(ch=='(')
+                    state=41;
+                else if(ch==')')
+                    state=42;
+                else if(ch==':')
+                    state=43;
+                else if(ch==',')
+                    state=44;
                 else if(ch=='\n')
                 {
                     line++;
@@ -384,6 +415,41 @@ char* lexer(FILE* fp)
                        //printf("buffer is %s",buffer);
                        return ret_token(state);
                    }
+            break;
+            case 35:
+                    if(ch=='"')
+                        state=37;
+                    else if(ch!='\n')
+                        state=36;
+            break;
+            case 36:
+                    if(ch=='\n')
+                    {
+                        buffer[buf_index-1]=0;
+                        fseek(fp,-1,SEEK_CUR);
+                        //printf("buffer is %s",buffer);
+                        return ret_token(state);
+                    }
+                    else if(ch=='"')
+                        state=37;
+            break;
+            case 37:
+                    buffer[buf_index-1]=0;
+                    fseek(fp,-1,SEEK_CUR);
+                    //printf("buffer is %s",buffer);
+                    return ret_token(state);
+            break;
+            case 38:
+            case 39:
+            case 40:
+            case 41:
+            case 42:
+            case 43:
+            case 44:
+                    buffer[buf_index-1]=0;
+                    fseek(fp,-1,SEEK_CUR);
+                    //printf("buffer is %s",buffer);
+                    return ret_token(state);
             break;
         }
         if(state==999)
