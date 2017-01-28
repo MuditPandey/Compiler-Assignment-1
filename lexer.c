@@ -45,7 +45,10 @@
 42.            )               42
 43.            :               43
 44.            ,               44
-
+45.       Comments_typ1(/*)    45     [not a final state]
+46.       Comments_typ1(/*..*) 46     [not a final state]
+47.       Comments_typ2(//)    47     [not a final state]
+48.       CommentEnd           48     [common end state for both comments]
 ******************************************************************************************************************************/
 #include<stdio.h>
 #include<stdbool.h>
@@ -84,6 +87,7 @@ bool isKeyword()
 }
 char* ret_token(int state_val)
 {
+   // printf("%d\n",state_val);
     if(state_val>=1 && state_val<=5)
         return "TK_ARITHMETIC_OPERATOR";
     else if(state_val==6 || (state_val>=17 && state_val<=21) || (state_val>=26 && state_val<=30))
@@ -92,7 +96,7 @@ char* ret_token(int state_val)
         return "TK_RELATIONAL_OPERATOR";
     else if(state_val>=9 && state_val<=16)
         return "TK_BITWISE_OPERATOR";
-    else if(state==31)
+    else if(state_val==31)
         {
             if(!isKeyword())
                 return "TK_IDENTIFIER";
@@ -107,6 +111,8 @@ char* ret_token(int state_val)
         return "TK_STRING";
     else if(state_val>=38 && state_val<=44)
         return "TK_DELIMITER";
+    else if(state_val==48)
+        return "COMMENTS_IGNORE";
     else
         return "BAD CHARACTER or INCORRECT USAGE";
 }
@@ -235,6 +241,10 @@ char* lexer(FILE* fp)
                     //printf("In state 4\n");
                     if(ch=='=')
                         state=20;
+                    else if(ch=='*')
+                        state=45;
+                    else if(ch=='/')
+                        state=47;
                     else
                     {
                         buffer[buf_index-1]=0;
@@ -451,6 +461,37 @@ char* lexer(FILE* fp)
                     //printf("buffer is %s",buffer);
                     return ret_token(state);
             break;
+            case 45:
+                    if(ch=='*')
+                        state=46;
+                    if(ch=='\n')
+                        line++;
+            break;
+            case 46:
+                    if(ch=='/')
+                    {
+                        buffer[buf_index]=0;
+                        state=48;
+                        //return comment or reset buffer here.
+                    }
+                    else if(ch!='*')
+                        state=45;
+                    if(ch=='\n')
+                        line++;
+            break;
+            case 47:
+                    if(ch=='\n')
+                    {
+                        buffer[buf_index-1]=0;
+                        line++;
+                        state=48;
+                        //return single line comment heree.
+                    }
+            case 48:
+                    buf_index=0;
+                    return ret_token(state); 
+            break;
+
         }
         if(state==999)
         {
@@ -466,5 +507,6 @@ char* lexer(FILE* fp)
             state=1000;
             return string;
         }
+    return "SilenceWarning";
 
 }
