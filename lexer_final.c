@@ -47,8 +47,8 @@
 44.            ,               44
 45.       Comments_typ1(/*)    45     [not a final state]
 46.       Comments_typ1(/*..*) 46     [not a final state]
-47.       Comments_typ2(//)    47     [not a final state--end if ch=='\n']
-48.       CommentEnd           48     [end state for multi-line comments]
+47.       Comments_typ2(//)    47     [not a final state]
+48.       CommentEnd           48     [end state for both comments]
 
 /******************************************************************************************************************************/
 #include<stdio.h>
@@ -479,9 +479,8 @@ char* lexer(FILE* fp)
                     //printf("in state 47");
                     if(ch=='\n')
                     {
-                        buf_index=0;
-                        fseek(fp,-1,SEEK_CUR);
-                        state=0;
+                        line++;
+                        state=48;
                     }
             break;
             case 48:
