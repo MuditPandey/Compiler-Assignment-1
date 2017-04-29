@@ -1,0 +1,44 @@
+PROGRAM -> object tk_identifier { def main ( args : Array [ String ] ) { STMTS } }
+STMTS -> STMTS ASSIGNMENT 
+STMTS -> STMTS DECLARATIONS 
+STMTS -> STMTS WHILE 
+STMTS -> STMTS IFELSE 
+STMTS -> ''
+B -> B || C
+B -> C
+C -> C && D
+C -> D 
+D -> ! D
+D -> ( B )
+D -> E REL E 
+D -> true
+D -> false
+REL -> > 
+REL -> >= 
+REL -> < 
+REL -> <= 
+REL -> != 
+REL -> ==
+E -> E + T 
+E -> E - T
+E -> T
+T -> T * F 
+T -> T / F
+T -> F
+F -> tk_identifier 
+F -> VAL
+F -> ( E ) 
+ASSIGNMENT -> tk_identifier = E
+VAL -> tk_integer 
+VAL -> tk_string
+VAL -> tk_float
+DECLARATIONS -> var tk_identifier = E
+DECLARATIONS -> var ( IDLIST ) = ( VALLIST )
+IDLIST -> tk_identifier
+IDLIST -> tk_identifier , IDLIST
+VALLIST -> E
+VALLIST -> E , VALLIST
+IFELSE -> if ( B ) { STMTS } ELSE
+ELSE -> ''
+ELSE -> else { STMTS }
+WHILE -> while ( B ) { STMTS }
